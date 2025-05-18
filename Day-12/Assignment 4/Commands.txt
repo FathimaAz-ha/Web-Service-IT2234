@@ -1,0 +1,221 @@
+1) 
+	use Library
+
+2) 
+		db.createCollection("libraries");
+		{ ok: 1 }
+		db.createCollection("books")
+		{ ok: 1 }
+		db.createCollection("authors")
+
+3)
+			db.libraries.insertMany([{
+			_id: ObjectId('60d5fbb2f295f5e2c4d5a8a1'),
+			name: "Central Library",
+			location: "Downtown"
+		},
+		{
+			_id: ObjectId('60d5fbb2f295f5e2c4d5a8a2'),
+			name: "Westside Branch",
+			location: "Westside"
+		}
+		])
+
+		db.books.insertMany([{
+			_id: ObjectId("60d5fc5ef295f5e2c4d5a8a3"),
+			title: "To Kill a Mockingbird",
+			library_id: ObjectId("60d5fbb2f295f5e2c4d5a8a1"),
+			author_ids: [ObjectId("60d5fd3ef295f5e2c4d5a8a4")]
+		},
+		{
+			_id: ObjectId("60d5fc5ef295f5e2c4d5a8a5"),
+			title: "1984",
+			library_id: ObjectId("60d5fbb2f295f5e2c4d5a8a2"),
+			author_ids: [ObjectId("60d5fd3ef295f5e2c4d5a8a6")]
+		},
+		{
+			_id: ObjectId("60d5fc5ef295f5e2c4d5a8a7"),
+			title: "Harry Potter and the Philosopher's Stone",
+			library_id: ObjectId("60d5fbb2f295f5e2c4d5a8a1"),
+			author_ids: [ObjectId("60d5fd3ef295f5e2c4d5a8a8"), ObjectId("60d5fd3ef295f5e2c4d5a8a9")]
+		}
+		])
+
+
+		db.authors.insertMany([{
+			_id: ObjectId('60d5fd3ef295f5e2c4d5a8a4'),
+			name: "Harper Lee",
+			birth_year: 1926
+		},
+		{
+			_id: ObjectId('60d5fd3ef295f5e2c4d5a8a6'),
+			name: "George Orwell",
+			birth_year: 1903
+		},
+		{
+			_id: ObjectId('60d5fd3ef295f5e2c4d5a8a8'),
+			name: "J.K. Rowling",
+			birth_year: 1965
+		},
+		{
+			_id: ObjectId('60d5fd3ef295f5e2c4d5a8a9'),
+			name: "John Tiffany",
+			birth_year: 1971
+		}])
+
+4) 
+		db.books.find({ library_id: ObjectId("60d5fbb2f295f5e2c4d5a8a1") });
+
+5)
+		db.libraries.aggregate([{$lookup: 
+		{
+			from:"books",
+			localField:"_id",
+			foreignField:"library",
+			as: "books"
+		}},{
+		$project : {
+		name: 1,
+		numberOfBooks : {$size:"$books"}
+		}
+		}
+		])
+	
+6)	
+
+	db.books.find({ author_ids: ObjectId("60d5fd3ef295f5e2c4d5a8a8") })
+
+7)
+		db.authors.aggregate([
+		{
+			$lookup: {
+				from: "books",
+				localField: "_id",
+				foreignField: "author_ids",
+				as: "books"
+			}
+		},
+		{
+			$project: {
+				name: 1,
+				books: 1
+			}
+		}
+	])
+
+8)
+	db.books.aggregate([
+    {
+        $lookup: {
+            from: "authors",
+            localField: "author_ids",
+            foreignField: "_id",
+            as: "authors"
+        }
+    }
+	])
+
+9)
+
+db.libraries.aggregate([
+    {
+        $lookup: {
+            from: "books",
+            localField: "_id",
+            foreignField: "library_id",
+            as: "books"
+        }
+    },
+    {
+        $project: {
+            name: 1,
+            numberOfBooks: { $size: "$books" }
+        }
+    }
+])
+
+10)
+db.libraries.aggregate([
+    {
+        $lookup: {
+            from: "books",
+            localField: "_id",
+            foreignField: "library_id",
+            as: "books"
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            averageBooks: { $avg: { $size: "$books" } }
+        }
+    }
+])
+
+11)
+db.authors.aggregate([
+    {
+        $lookup: {
+            from: "books",
+            localField: "_id",
+            foreignField: "author_ids",
+            as: "books"
+        }
+    },
+    {
+        $match: { $expr: { $gt: [{ $size: "$books" }, 1] } }
+    }
+])
+
+12) 
+
+db.books.aggregate([
+    {
+        $lookup: {
+            from: "authors",
+            localField: "author_ids",
+            foreignField: "_id",
+            as: "authors"
+        }
+    },
+    {
+        $lookup: {
+            from: "libraries",
+            localField: "library_id",
+            foreignField: "_id",
+            as: "library"
+        }
+    },
+    {
+        $project: {
+            title: 1,
+            authors: "$authors.name",
+            library: { $arrayElemAt: ["$library.name", 0] }
+        }
+    }
+])
+
+
+13)
+db.authors.aggregate([
+    {
+        $lookup: {
+            from: "books",
+            localField: "_id",
+            foreignField: "author_ids",
+            as: "books"
+        }
+    },
+    {
+        $match: { books: { $eq: [] } }
+    }
+])
+
+
+
+
+
+
+
+		
+
