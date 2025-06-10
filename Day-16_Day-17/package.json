@@ -1,0 +1,17 @@
+{
+  "name": "exe",
+  "version": "1.0.0",
+  "description": "test",
+  "license": "ISC",
+  "author": "pavani pabasara",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": " nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.15.0",
+    "nodemon": "^3.1.10"
+  }
+}
